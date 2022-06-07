@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/extensions
-import { pageSetup, getWeatherData, addListeners } from './moduleFunctions.js';
+import { pageSetup, addListeners } from './moduleFunctions.js';
 
 pageSetup();
 addListeners();

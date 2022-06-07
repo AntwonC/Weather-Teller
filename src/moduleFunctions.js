@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/extensions
-import getAPIKey from './apiKey.js';
+import { getAPIKey, getGIFAPIKey } from './apiKey.js';
 
 const pageSetup = () => {
   const contentContainer = document.querySelector('#content');
@@ -12,6 +12,7 @@ const pageSetup = () => {
   const submitButton = document.createElement('button');
   const errorDiv = document.createElement('div');
   const weatherDiv = document.createElement('div');
+  const weatherGIF = document.createElement('img');
 
   // Grid Setup
   const headerContainer = document.createElement('div');
@@ -74,43 +75,73 @@ const pageSetup = () => {
   weatherDiv.setAttribute('id', 'weather');
   weatherDiv.style.fontSize = '50px';
   weatherDiv.style.display = 'none';
+  weatherDiv.style.gridRow = '3 / 4';
+  weatherDiv.style.gridColumn = '2 / 3';
+
+  weatherGIF.setAttribute('id', 'weather-gif');
+  weatherGIF.style.gridRow = '3 / 4';
+  weatherGIF.style.gridColumn = '2 / 3';
+  weatherGIF.style.display = 'none';
+  weatherGIF.style.height = '200px';
+  weatherGIF.style.marginTop = '200px';
+  weatherGIF.style.justifySelf = 'center';
 
   setUpContainer.appendChild(headerTitle);
   setUpContainer.appendChild(errorDiv);
   setUpContainer.appendChild(locationInput);
   setUpContainer.appendChild(submitButton);
   setUpContainer.appendChild(weatherDiv);
+  setUpContainer.appendChild(weatherGIF);
   // Page Contents
   contentContainer.appendChild(setUpContainer);
 };
 
+const getWeatherGIF = async (weather) => {
+  const weatherGIF = document.querySelector('#weather-gif');
+  const errorDiv = document.querySelector('#error-input');
+  try {
+    const response = await fetch(`http://api.giphy.com/v1/gifs/translate?api_key=${getGIFAPIKey()}=${weather}`, { mode: 'cors' });
+    const gifData = await response.json();
+
+    weatherGIF.src = gifData.data.images.original.url;
+
+    weatherGIF.style.display = 'block';
+  } catch (err) {
+    errorDiv.textContent = 'Could not find the gif!';
+    errorDiv.style.display = 'none';
+  }
+};
 const getWeatherData = async (location) => {
   const errorDiv = document.querySelector('#error-input');
   const weatherDiv = document.querySelector('#weather');
 
   try {
     if (location.textContent.length === 0) {
-      console.log('In location');
       throw new Error('EmptyInputError');
     }
 
     const weatherResponse = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${location.textContent}&appid=${getAPIKey()}`);
 
-    console.log(weatherResponse.status);
     if (weatherResponse.status === 404) {
       throw new Error('LocationNotFoundError');
     }
 
     const locationJSON = await weatherResponse.json();
+    const feelsLikeTemp = parseInt(locationJSON.main.feels_like, 10);
+    // eslint-disable-next-line no-mixed-operators
+    const tempInF = (feelsLikeTemp - 273.15) * 9 / 5 + 32;
+    const tempInC = (feelsLikeTemp - 273.15);
 
-    weatherDiv.textContent = locationJSON.weather[0].description;
+    weatherDiv.textContent = `Current weather in ${location.textContent}: ${locationJSON.weather[0].description}\n
+                              Temperature: ${tempInF.toFixed()}F (${tempInC.toFixed()}C)\n
+                              Wind Speed: ${locationJSON.wind.speed.toFixed()}mph`;
+    weatherDiv.style.display = 'block';
 
-    console.log(locationJSON.weather[0].description);
+    errorDiv.style.display = 'none';
+    getWeatherGIF(`${locationJSON.weather[0].description} weather`);
 
     // console.log(locationJSON);
   } catch (err) {
-    console.log(err.message);
-
     if (err.message.localeCompare('EmptyInputError') === 0) {
       errorDiv.textContent = 'Input cannot be empty!';
       errorDiv.style.display = 'block';
