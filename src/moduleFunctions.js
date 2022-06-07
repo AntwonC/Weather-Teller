@@ -170,4 +170,4 @@ const addListeners = () => {
     getWeatherData(locationInput);
   });
 };
-export { pageSetup, getWeatherData, addListeners };
+export { pageSetup, addListeners };
