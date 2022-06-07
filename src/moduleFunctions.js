@@ -100,7 +100,7 @@ const getWeatherGIF = async (weather) => {
   const weatherGIF = document.querySelector('#weather-gif');
   const errorDiv = document.querySelector('#error-input');
   try {
-    const response = await fetch(`http://api.giphy.com/v1/gifs/translate?api_key=${getGIFAPIKey()}=${weather}`, { mode: 'cors' });
+    const response = await fetch(`https://api.giphy.com/v1/gifs/translate?api_key=${getGIFAPIKey()}=${weather}`, { mode: 'cors' });
     const gifData = await response.json();
 
     weatherGIF.src = gifData.data.images.original.url;
@@ -120,7 +120,7 @@ const getWeatherData = async (location) => {
       throw new Error('EmptyInputError');
     }
 
-    const weatherResponse = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${location.textContent}&appid=${getAPIKey()}`);
+    const weatherResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location.textContent}&appid=${getAPIKey()}`);
 
     if (weatherResponse.status === 404) {
       throw new Error('LocationNotFoundError');
